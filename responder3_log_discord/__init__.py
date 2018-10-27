@@ -60,6 +60,9 @@ class discordHandler(LoggerExtensionTask):
 		self.msg_queue = asyncio.Queue()
 		self.token = self.config['token']
 		self.channel_name = self.config['channel']
+		self.extra_info = None
+		if 'extra_info' in self.config:
+			self.extra_info = self.config['extra_info']
 		self.discordbot = HoneyBot(self.msg_queue, self.token, self.channel_name)
 		
 	async def main(self):
@@ -78,7 +81,8 @@ class discordHandler(LoggerExtensionTask):
 					embed.add_field(name="Reverse DNS", value=str(msg.client_rdns), inline=False)
 					embed.add_field(name="Protocol", value= str(msg.module), inline=False)
 					embed.add_field(name="Credz", value=str(msg.fullhash), inline=False)
-					embed.set_footer(text= "© SkelSec") #icon_url: client.user.avatarURL,
+					embed.add_field(name="Extra info", value=str(self.extra_info), inline=False)
+					embed.set_footer(text= "© @SkelSec") #icon_url: client.user.avatarURL,
 					await self.msg_queue.put(embed)
 			except Exception as e:
 				print(e)
