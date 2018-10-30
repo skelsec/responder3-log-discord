@@ -2,7 +2,7 @@
 import asyncio
 import discord
 from responder3.core.logtask import LoggerExtensionTask
-from responder3.core.commons import Credential
+from responder3.core.commons import Credential, ConnectionOpened
 
 class HoneyBot(discord.Client):
 	def __init__(self, msg_queue, token, channel_name = 'general'):
@@ -61,8 +61,11 @@ class discordHandler(LoggerExtensionTask):
 		self.token = self.config['token']
 		self.channel_name = self.config['channel']
 		self.extra_info = None
+		self.log_connections = False
 		if 'extra_info' in self.config:
 			self.extra_info = self.config['extra_info']
+		if 'log_connections' in self.config and self.config['log_connections'] == True:
+			self.log_connections = True
 		self.discordbot = HoneyBot(self.msg_queue, self.token, self.channel_name)
 		
 	async def main(self):
@@ -84,11 +87,20 @@ class discordHandler(LoggerExtensionTask):
 					embed.add_field(name="Extra info", value=str(self.extra_info), inline=False)
 					embed.set_footer(text= "© @SkelSec") #icon_url: client.user.avatarURL,
 					await self.msg_queue.put(embed)
-			except Exception as e:
-				print(e)
-
 				
-			
+				if isinstance(msg, ConnectionOpened) and self.log_connections == True:
+					embed = discord.Embed(title = "Connection", description="We have a visitor", color=3447003)
+					embed.set_author(name = "HoneyBot")
+					embed.add_field(name="Source IP", value=str(msg.connection.remote_ip), inline=False)
+					embed.add_field(name="Dst port", value= str(msg.connection.local_port), inline=False)
+					embed.add_field(name="Reverse DNS", value=str(msg.remote_dns), inline=False)
+					embed.add_field(name="Extra info", value=str(self.extra_info), inline=False)
+					embed.set_footer(text= "© @SkelSec") #icon_url: client.user.avatarURL,
+					await self.msg_queue.put(embed)
+					
+			except Exception as e:
+				traceback.print_exc()
+	
 	async def setup(self):
 		pass
 
