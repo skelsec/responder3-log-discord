@@ -63,7 +63,7 @@ class discordHandler(LoggerExtensionTask):
 				self.extra_info = self.config['extra_info']
 			if 'log_connections' in self.config and self.config['log_connections'] == True:
 				self.log_connections = True
-			self.discordbot = HoneyBot(self.msg_queue, self.token, self.channel_name)
+			self.discordbot = HoneyBot(self.log_queue, self.msg_queue, self.token, self.channel_name)
 		except Exception as e:
 			traceback.print_exc()
 
