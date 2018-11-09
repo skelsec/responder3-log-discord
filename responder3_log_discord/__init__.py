@@ -7,8 +7,9 @@ from responder3.core.logtask import LoggerExtensionTask
 from responder3.core.commons import Credential, ConnectionOpened
 
 class HoneyBot(discord.Client):
-	def __init__(self, msg_queue, token, channel_name = 'general'):
+	def __init__(self, log_queue, msg_queue, token, channel_name = 'general'):
 		discord.Client.__init__(self)
+		self.logger = Logger('HoneyBot', logQ = log_queue)
 		self.token = token
 		self.msg_queue = msg_queue
 		self.stop_event = asyncio.Event()
@@ -28,30 +29,23 @@ class HoneyBot(discord.Client):
 									try:
 										await self.send_message(channel, embed=embed)
 									except Exception as e:
-										print(str(e))
+										await self.logger.exception()
 										continue
 				except Exception as e:
-					print(str(e))
+					await self.logger.exception()
 				
 		except Exception as e:
-			print(e)
+			await self.logger.exception()
 	
 		
 	async def on_message(self, message):
 		return
-		# we do not want the bot to reply to itself
-		if message.author == self.user:
-			return
-			
-		if message.content.startswith('!hello'):
-			msg = 'Hello {0.author.mention}'.format(message)
-			await self.send_message(message.channel, msg)
+
+	async def on_error(self, event, *args, **kwargs):
+		await self.logger.exception('Event raised an exception! Event name: %s' % str(event))
 
 	async def on_ready(self):
-		print('Logged in as')
-		print(self.user.name)
-		print(self.user.id)
-		print('------')
+		await self.logger.info('Logged on to Discord! Username: %s UserID: %s' % (self.user.name, self.user.id))
 		
 	async def hb_start(self):
 		asyncio.ensure_future(self.process_msg())
@@ -101,7 +95,7 @@ class discordHandler(LoggerExtensionTask):
 					await self.msg_queue.put(embed)
 
 			except Exception as e:
-				traceback.print_exc()
+				await self.logger.exception()
 
 	async def setup(self):
 		pass
