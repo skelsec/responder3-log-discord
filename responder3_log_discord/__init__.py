@@ -22,12 +22,11 @@ class HoneyBot(discord.Client):
 				try:
 					for channel in self.get_all_channels(): 
 						if channel.name == self.channel_name:
-							if channel.permissions_for(self.user).send_messages:
-								try:
-									await self.send_message(channel, embed=embed)
-								except Exception as e:
-									await self.logger.exception()
-									continue
+							try:
+								await self.send_message(channel, embed=embed)
+							except Exception as e:
+								await self.logger.exception()
+								continue
 				except Exception as e:
 					await self.logger.exception()
 				
