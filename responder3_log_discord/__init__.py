@@ -20,17 +20,14 @@ class HoneyBot(discord.Client):
 			while True:
 				embed = await self.msg_queue.get()
 				try:
-					for server in self.servers: 
-						# Spin through every server
-						for channel in server.channels: 
-							# Channels on the server
-							if channel.name == self.channel_name:
-								if channel.permissions_for(server.me).send_messages:
-									try:
-										await self.send_message(channel, embed=embed)
-									except Exception as e:
-										await self.logger.exception()
-										continue
+					for channel in self.get_all_channels(): 
+						if channel.name == self.channel_name:
+							if channel.permissions_for(server.me).send_messages:
+								try:
+									await self.send_message(channel, embed=embed)
+								except Exception as e:
+									await self.logger.exception()
+									continue
 				except Exception as e:
 					await self.logger.exception()
 				
