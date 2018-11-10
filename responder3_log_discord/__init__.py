@@ -3,7 +3,7 @@ import asyncio
 import discord
 import traceback
 
-from responder3.core.logtask import LoggerExtensionTask
+from responder3.core.logtask import LoggerExtensionTask, Logger, r3exception
 from responder3.core.commons import Credential, ConnectionOpened
 
 class HoneyBot(discord.Client):
