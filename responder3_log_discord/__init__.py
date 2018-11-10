@@ -23,7 +23,7 @@ class HoneyBot(discord.Client):
 					for channel in self.get_all_channels(): 
 						if channel.name == self.channel_name:
 							try:
-								await self.send_message(channel, embed=embed)
+								await channel.send(embed=embed)
 							except Exception as e:
 								await self.logger.exception()
 								continue
