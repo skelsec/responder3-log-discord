@@ -3,8 +3,10 @@ import asyncio
 import discord
 import traceback
 
-from responder3.core.logtask import LoggerExtensionTask, Logger, r3exception
-from responder3.core.commons import Credential, ConnectionOpened
+from responder3.core.logging.logtask import LoggerExtensionTask
+from responder3.core.logging.logger import Logger, r3exception
+from responder3.core.commons import Connection
+from responder3.core.logging.log_objets import ConnectionOpened, Credential
 
 class HoneyBot(discord.Client):
 	def __init__(self, log_queue, msg_queue, token, channel_name = 'general'):
