@@ -31,8 +31,8 @@ setup(
 	#Dependent packages (distributions)
 	install_requires=[
 		"discord",
-		"websockets>=7.0",
-		"aiohttp>=3.4.4",
+		"websockets",
+		"aiohttp",
 	],
 
 	python_requires='>=3.7',

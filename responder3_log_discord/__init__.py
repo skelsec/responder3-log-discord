@@ -1,4 +1,4 @@
-# Work with Python 3.6
+#!/usr/bin/env python
 import asyncio
 import discord
 import traceback
@@ -9,33 +9,29 @@ from responder3.core.commons import Connection
 from responder3.core.logging.log_objects import ConnectionOpened, Credential
 
 class HoneyBot(discord.Client):
-	def __init__(self, log_queue, msg_queue, token, channel_name = 'general'):
+	def __init__(self, log_queue, msg_queue, token, channel_id):
 		discord.Client.__init__(self)
 		self.logger = Logger('HoneyBot', logQ = log_queue)
 		self.token = token
 		self.msg_queue = msg_queue
 		self.stop_event = asyncio.Event()
-		self.channel_name = channel_name
-	
+		self.channel_id = channel_id
+
 	async def process_msg(self):
 		try:
 			while True:
 				embed = await self.msg_queue.get()
 				try:
-					for channel in self.get_all_channels(): 
-						if channel.name == self.channel_name:
-							try:
-								await channel.send(embed=embed)
-							except Exception as e:
-								await self.logger.exception()
-								continue
+					channel = self.get_channel(self.channel_id)
+					await self.send_message(channel, embed=embed)
+
 				except Exception as e:
 					await self.logger.exception()
-				
+
 		except Exception as e:
 			await self.logger.exception()
-	
-		
+
+
 	async def on_message(self, message):
 		return
 
@@ -44,11 +40,11 @@ class HoneyBot(discord.Client):
 
 	async def on_ready(self):
 		await self.logger.info('Logged on to Discord! Username: %s UserID: %s' % (self.user.name, self.user.id))
-		
+
 	async def hb_start(self):
 		asyncio.ensure_future(self.process_msg())
 		await self.start(self.token)
-		
+
 class discordHandler(LoggerExtensionTask):
 	def init(self):
 		try:
@@ -71,25 +67,22 @@ class discordHandler(LoggerExtensionTask):
 			msg = await self.result_queue.get()
 			try:
 				if isinstance(msg, Credential):
-					#https://anidiots.guide/first-bot/using-embeds-in-messages
-					embed = discord.Embed(title = "Credntials", description="Here comes the next contestant!", color=3447003)
-					embed.set_author(name = "HoneyBot")
-					embed.add_field(name="Source IP", value=str(msg.client_addr), inline=False)
-					embed.add_field(name="Reverse DNS", value=str(msg.client_rdns), inline=False)
-					embed.add_field(name="Protocol", value= str(msg.module), inline=False)
+					#https://cog-creators.github.io/discord-embed-sandbox/
+					embed = discord.Embed(color=0x00dcff)
+					embed.add_field(name="Source IP", value=str(msg.client_addr), inline=True)
+					embed.add_field(name="Reverse DNS", value=str(msg.client_rdns), inline=True)
+					embed.add_field(name="Protocol", value=str(msg.module), inline=False)
 					embed.add_field(name="Credz", value=str(msg.fullhash), inline=False)
-					embed.add_field(name="Extra info", value=str(self.extra_info), inline=False)
-					embed.set_footer(text= "© @SkelSec") #icon_url: client.user.avatarURL,
+					embed.add_field(name="Info", value=str(self.extra_info), inline=True)
+					embed.set_footer(text="https://github.com/skelsec/responder3")
 					await self.msg_queue.put(embed)
 
 				if isinstance(msg, ConnectionOpened) and self.log_connections == True:
-					embed = discord.Embed(title = "Connection", description="We have a visitor", color=3447003)
-					embed.set_author(name = "HoneyBot")
-					embed.add_field(name="Source IP", value=str(msg.connection.remote_ip), inline=False)
-					embed.add_field(name="Dst port", value= str(msg.connection.local_port), inline=False)
-					embed.add_field(name="Reverse DNS", value=str(msg.connection.remote_dns), inline=False)
-					embed.add_field(name="Extra info", value=str(self.extra_info), inline=False)
-					embed.set_footer(text= "© @SkelSec") #icon_url: client.user.avatarURL,
+					embed = discord.Embed(color=0x00dcff)
+					embed.add_field(name="Source IP", value=str(msg.connection.remote_ip), inline=True)
+					embed.add_field(name="Reverse DNS", value=str(msg.connection.local_port), inline=True)
+					embed.add_field(name="Info", value=str(self.extra_info), inline=True)
+					embed.set_footer(text="https://github.com/skelsec/responder3")
 					await self.msg_queue.put(embed)
 
 			except Exception as e:
@@ -101,9 +94,7 @@ class discordHandler(LoggerExtensionTask):
 
 if __name__ == '__main__':
 	msg_queue = asyncio.Queue()
-	h= HoneyBot(msg_queue)
-	
-	loop = asyncio.get_event_loop()	
+	h = HoneyBot(msg_queue)
+
+	loop = asyncio.get_event_loop()
 	loop.run_until_complete(h.hb_start())
-	
-	
