@@ -27,7 +27,7 @@ logsettings = {
                 'token' : '<your bot token>',
                 'channel' : '<target channel id>',
                 'extra_info':'localhost',
-                'log_connections': True,
+                'log_connections': True, #only enable this is you want to drown in messages!
         },
 <snip>
 }
