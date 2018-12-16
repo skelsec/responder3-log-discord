@@ -21,7 +21,7 @@ now update mismatched depends
 ```
 logsettings = {
         'handlers':{
-                'discord': 'discord'
+                'discord': ['discord'],
         },
         'discord' : {
                 'token' : '<your bot token>',
